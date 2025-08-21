@@ -1,0 +1,52 @@
+{
+  "fk_attention": {
+    "standard": {
+      "final_training_loss": 0.0030971253116149457,
+      "test_accuracy": 1.0,
+      "test_accuracy_std": 0.0
+    },
+    "fk": {
+      "final_training_loss": 0.003057725273538381,
+      "test_accuracy": 1.0,
+      "test_accuracy_std": 0.0
+    }
+  },
+  "spd_router": {
+    "0.1": {
+      "structure_correlation": 0.1699359118938446,
+      "noise_correlation": 0.016979336738586426,
+      "cross_correlation": 0.021242789924144745,
+      "snr_improvement_db": -14.017282485961914,
+      "original_snr_db": 16.889921188354492,
+      "separated_snr_db": 2.8726391792297363
+    },
+    "0.3": {
+      "structure_correlation": 0.12621378898620605,
+      "noise_correlation": -0.012205645442008972,
+      "cross_correlation": 0.014620787464082241,
+      "snr_improvement_db": -6.5365753173828125,
+      "original_snr_db": 7.2663044929504395,
+      "separated_snr_db": 0.729729175567627
+    },
+    "0.5": {
+      "structure_correlation": 0.20335400104522705,
+      "noise_correlation": 0.027495384216308594,
+      "cross_correlation": 0.018611373379826546,
+      "snr_improvement_db": 1.5347747802734375,
+      "original_snr_db": 2.816984176635742,
+      "separated_snr_db": 4.35175895690918
+    }
+  },
+  "verifier_head": {
+    "standard": {
+      "accuracy": 0.7599999904632568,
+      "final_loss": 0.6966999173164368
+    },
+    "verifier": {
+      "accuracy": 0.6399999856948853,
+      "final_loss": 0.6700940132141113
+    }
+  },
+  "evaluation_time": 46.076369762420654,
+  "timestamp": "2025-08-21 12:28:51"
+}

@@ -113,29 +113,63 @@ We demonstrate that the SPaR-K architecture can be successfully implemented and 
 - **Component Integration**: All three components process data without errors or conflicts
 - **Numerical Stability**: No gradient explosions or NaN values during training
 
-### 4.2 Component Functionality Tests
+### 4.2 Comparative Performance Evaluation
 
-**FK-Attention Module**: Successfully computes resolvent operations (I - βA)^(-1)V without numerical instability. The module processes attention matrices and produces outputs of expected dimensions.
+We conducted systematic comparison against standard Transformer baselines across three task categories:
 
-**SPD Router Module**: Produces structured and pseudo-random component decompositions with measured separation loss of 1.91, indicating the components are being differentiated.
+**FK-Attention vs Standard Attention (Graph Reasoning)**:
+- Task: Simple sequence classification (proxy for reachability)
+- Standard Transformer accuracy: 1.000 ± 0.000
+- FK-Attention accuracy: 1.000 ± 0.000
+- **Result**: No significant difference (+0.000 improvement)
+- *Analysis*: Both models solved the test task perfectly; more challenging multi-hop tasks needed to differentiate approaches
 
-**Verifier Head Module**: Maintains differentiable stack operations with verification loss of 0.0006, showing the stack mechanism functions without underflow/overflow penalties.
+**SPD Router vs Baseline Filtering (Signal Separation)**:
+- Task: Separate structured sine waves from Gaussian noise
+- Results by noise level:
+  - Low noise (0.1): Structure correlation 0.170, SNR change -14.0 dB
+  - Medium noise (0.3): Structure correlation 0.126, SNR change -6.5 dB  
+  - High noise (0.5): Structure correlation 0.203, SNR change +1.5 dB
+- **Result**: Improvement only at high noise levels; underperforms at low noise
+- *Analysis*: Current implementation requires optimization for low-noise scenarios
 
-### 4.3 Current Limitations
+**Verifier Head vs Standard Transformer (Algorithmic Generalization)**:
+- Task: Balanced parentheses validation
+- Standard Transformer accuracy: 0.760
+- Verifier Head accuracy: 0.640  
+- **Result**: Performance decreased (-0.120 improvement)
+- *Analysis*: Current verifier implementation may be undertrained or require architectural refinement
 
-**Validation Scope**: Testing limited to:
-- Synthetic sequence data only
-- Small model scale (643K parameters) 
-- Short training runs (3 epochs)
-- No comparison against standard Transformer baselines
-- No evaluation on established reasoning benchmarks
+### 4.3 Performance Analysis and Limitations
 
-**Missing Evaluations**:
-- Performance comparison on multi-hop reasoning datasets (HotpotQA, MuSiQue)
-- Systematic analysis of computational overhead
-- Scaling behavior on larger models and datasets
-- Real-world task performance validation
-- Ablation studies isolating individual component contributions
+**Current Performance Status**:
+- **Overall Assessment**: 1/3 components show meaningful improvement
+- **Evaluation Time**: 46.1 seconds for comprehensive benchmark suite
+- **Recommendation**: Selective component adoption based on specific use cases
+
+**Component-Specific Limitations**:
+
+*FK-Attention*:
+- No advantage demonstrated on current graph reasoning tasks
+- Test tasks may be too simple to reveal multi-hop benefits
+- Requires more challenging evaluation scenarios (longer dependency chains)
+
+*SPD Router*:
+- Effective only at high noise levels (≥0.5)
+- Poor performance at low noise (negative SNR improvement)
+- Structure correlation remains low (0.12-0.20 range)
+- May need task-specific basis learning
+
+*Verifier Head*:
+- Underperforms standard baseline (-12% accuracy)
+- Possible issues: insufficient training, architectural complexity, task mismatch
+- Verification loss indicates stack operations work but don't improve task performance
+
+**Methodological Limitations**:
+- Evaluation tasks may not match component strengths
+- Training time insufficient for complex component optimization  
+- Small model scale (643K parameters) limits capacity
+- Need domain-specific tuning for each component
 
 ## 5. Concrete Examples and Use Cases
 
@@ -188,11 +222,37 @@ Consider learning to validate nested programming constructs:
 - **Lower value**: Simple pattern matching, clean data, or tasks not requiring systematic reasoning
 - **Modular adoption**: Individual components can be used independently based on specific task requirements
 
-## 7. Limitations and Future Work
+## 7. Limitations and Recommendations for Improvement
 
-1. **Computational Overhead**: FK-Attention requires approximate resolvent computation
-2. **Basis Learning**: SPD effectiveness depends on learned basis quality
-3. **Verification Design**: Careful selection of invariants to avoid brittleness
+### 7.1 Component-Specific Issues Identified
+
+**FK-Attention**:
+1. **Current Issue**: No demonstrated advantage on simple reasoning tasks
+2. **Recommendations**: 
+   - Evaluate on more challenging multi-hop scenarios (knowledge graphs with 5+ hops)
+   - Tune β parameter and approximation methods for specific task types
+   - Test on larger model scales where multi-hop benefits may emerge
+
+**SPD Router**:
+1. **Current Issue**: Poor performance at low noise levels (negative SNR)
+2. **Recommendations**:
+   - Improve basis learning for task-specific structure types
+   - Add adaptive noise level detection
+   - Explore alternative decomposition methods (ICA, sparse coding)
+
+**Verifier Head**:
+1. **Current Issue**: Underperforms baseline by 12% accuracy
+2. **Recommendations**:
+   - Increase training time and model capacity
+   - Redesign verification objectives for specific algorithmic tasks
+   - Experiment with different stack sizes and verification types
+
+### 7.2 Architectural Improvements Needed
+
+1. **Task-Specific Tuning**: Components need customization for different problem domains
+2. **Training Procedures**: Longer training and careful hyperparameter tuning required
+3. **Evaluation Methodology**: More challenging benchmark tasks needed to reveal advantages
+4. **Computational Efficiency**: Overhead analysis and optimization required for practical deployment
 
 ## 8. Conclusion
 
@@ -202,23 +262,33 @@ SPaR-K presents a novel architectural approach that combines three theoretically
 
 We demonstrate the **architectural feasibility** of integrating these components into a working Transformer variant. The implementation successfully trains without numerical instabilities and shows that the three modules can operate together in a unified framework.
 
-### Current Status and Future Work
+### Current Status and Empirical Findings
 
-This work provides a **proof-of-concept implementation** that establishes the technical viability of the proposed approach. However, the hypotheses about improved reasoning capabilities require substantial empirical validation that remains future work:
+Our comprehensive evaluation reveals **mixed results** with only 1 out of 3 components showing meaningful improvement under current testing conditions:
 
-**Immediate Next Steps**:
-- Systematic comparison against standard Transformers on established multi-hop reasoning benchmarks
-- Computational efficiency analysis and optimization
-- Scaling studies to larger model sizes and datasets
-- Ablation studies to isolate individual component contributions
+**Key Findings**:
+- **Architectural Feasibility**: ✅ All components integrate successfully and train stably
+- **Performance Gains**: ⚠️ Limited evidence of improvements over standard baselines
+- **Component Maturity**: Components require significant optimization for practical benefits
 
-**Longer-term Research Directions**:
-- Application to real-world reasoning tasks (legal analysis, scientific literature review)
-- Integration with existing large language model architectures
-- Development of domain-specific verification mechanisms
-- Exploration of alternative resolvent approximation methods
+**Evidence-Based Assessment**:
+1. **FK-Attention**: No advantage demonstrated on current reasoning tasks; may require more complex scenarios or larger model scales
+2. **SPD Router**: Shows promise only at high noise levels (≥0.5); needs improvement for typical use cases  
+3. **Verifier Head**: Currently underperforms baseline; requires architectural refinement
 
-The modular design enables selective adoption and evaluation of individual components, facilitating incremental validation of the underlying hypotheses about Transformer limitations and potential solutions.
+**Immediate Research Priorities**:
+- **Task Design**: Develop evaluation scenarios that better match component theoretical strengths
+- **Hyperparameter Optimization**: Systematic tuning of β, separation strength, stack parameters
+- **Training Methodology**: Longer training with component-specific objectives
+- **Architectural Refinement**: Address identified performance bottlenecks
+
+**Long-term Research Directions**:
+- **Scale Studies**: Evaluate at larger model sizes where benefits may emerge
+- **Domain Specialization**: Adapt components for specific application areas
+- **Alternative Implementations**: Explore different approximation methods and verification mechanisms
+- **Hybrid Approaches**: Selective component adoption based on task characteristics
+
+This work establishes the **architectural foundation** for the SPaR-K approach while highlighting the substantial optimization work needed to realize theoretical advantages in practice.
 
 ## References
 
