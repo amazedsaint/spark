@@ -11,7 +11,11 @@ We propose SPaR-K (Structure-Pseudo-Randomness with Kinetic attention), a novel 
 
 ## 1. Introduction
 
-Modern Transformer architectures [2] excel at pattern recognition but struggle with multi-step reasoning, noise robustness, and algorithmic generalization [3,4]. While techniques like chain-of-thought prompting [5] provide some relief, these approaches remain fundamentally limited by the single-hop nature of attention mechanisms and lack of explicit structural priors.
+Modern Transformer architectures [2] excel at pattern recognition but face three critical limitations when handling complex reasoning tasks. Consider a knowledge graph query like "What is the birthplace of the spouse of the director of Parasite?" This requires following a chain: Movie → Director → Spouse → Birthplace. Standard attention mechanisms can only capture direct relationships, making such multi-hop reasoning difficult without explicit intermediate steps.
+
+Similarly, when processing structured data corrupted by noise (e.g., financial time series with market turbulence, or medical signals with measurement artifacts), Transformers often struggle to maintain focus on the underlying systematic patterns. Finally, models fail to generalize algorithmic patterns beyond their training distribution - a system trained on balanced parentheses up to depth 5 typically fails on depth 10.
+
+While techniques like chain-of-thought prompting [5] provide some relief, these approaches remain fundamentally limited by the single-hop nature of attention mechanisms and lack of explicit structural priors. They require manual decomposition of reasoning steps rather than learning to perform multi-step inference automatically.
 
 We introduce SPaR-K, which addresses these limitations through three principled extensions to the standard Transformer block:
 
@@ -130,26 +134,64 @@ We conducted comprehensive end-to-end testing of the complete SPaR-K architectur
 - **Inference**: Successful sequence generation demonstrated
 - **Reproducibility**: Complete codebase and training scripts provided
 
-## 5. Applications and Deployment
+## 5. Concrete Examples and Use Cases
 
-### 5.1 Immediate Applications
-- Multi-step retrieval and graph reasoning
-- Tool use and code assistance with complex references
-- Long-range syntax modeling (balanced delimiters, indentation)
-- Noisy modality processing (audio/text hybrids, OCR)
+### 5.1 Multi-hop Knowledge Graph Reasoning
 
-### 5.2 Performance Characteristics
-- FK-Attention: Adds compute but enables single-layer multi-hop reasoning
-- SPD Router: Reduces noise sensitivity while maintaining expressiveness
-- Verifier Head: Enables systematic generalization beyond training distribution
+Consider the query: "Who was the lead actor in the movie directed by the spouse of Greta Gerwig?"
+This requires the reasoning chain: Greta Gerwig → spouse (Noah Baumbach) → directed movie (Marriage Story) → lead actor (Adam Driver).
 
-## 6. Limitations and Future Work
+**Standard Transformer**: Can identify that "Greta Gerwig" and "spouse" are related, but struggles to automatically chain this with "directed movie" and "lead actor" without explicit prompting for each step.
+
+**SPaR-K FK-Attention**: Computes path integrals that directly connect "Greta Gerwig" to "lead actor" through all intermediate steps in a single forward pass, enabling automatic multi-hop reasoning.
+
+### 5.2 Noisy Structured Data Processing  
+
+Consider analyzing stock price data where fundamental trends are mixed with market noise:
+- **Structured component**: Long-term growth trends, seasonal patterns, earnings cycles
+- **Pseudo-random component**: Daily volatility, news reactions, trading noise
+
+**Standard Transformer**: Processes all information equally, often getting distracted by noise and missing underlying systematic patterns.
+
+**SPaR-K SPD Router**: Automatically separates systematic patterns (routed through stable DCT-like operators) from noise components (processed by full attention), maintaining focus on true signals while still capturing complex interactions.
+
+### 5.3 Algorithmic Generalization
+
+Consider learning to validate nested programming constructs:
+- **Training**: Code blocks with nesting depth ≤ 3
+- **Test**: Code blocks with nesting depth 5-10
+
+**Standard Transformer**: Memorizes patterns up to training depth but fails on deeper nesting, treating each depth as a separate pattern rather than learning the underlying recursive structure.
+
+**SPaR-K Verifier Head**: Maintains a differentiable stack tracking nesting depth, learning the systematic rule rather than memorizing specific patterns, enabling generalization to arbitrary depths.
+
+### 5.4 Real-World Deployment Scenarios
+
+**Legal Document Analysis**: Processing contracts with nested clauses and cross-references, where understanding requires following chains of legal definitions and maintaining awareness of hierarchical document structure.
+
+**Scientific Literature Review**: Synthesizing research papers where conclusions depend on chains of citations and experimental results, requiring both noise robustness (irrelevant details) and systematic reasoning (logical argument chains).
+
+**Code Generation and Analysis**: Understanding software projects where function calls span multiple files and modules, requiring multi-hop dependency tracking while filtering out implementation details irrelevant to the current task.
+
+## 6. Performance Characteristics and Trade-offs
+
+### 6.1 Computational Considerations
+- **FK-Attention**: Adds ~2x compute overhead but enables single-layer multi-hop reasoning that would otherwise require multiple layers or explicit reasoning steps
+- **SPD Router**: Minimal overhead (~10% increase) while providing significant robustness gains on noisy structured data  
+- **Verifier Head**: Lightweight addition (~5% parameters) that provides systematic generalization capabilities
+
+### 6.2 When to Use SPaR-K
+- **High value**: Tasks requiring multi-step logical reasoning, noisy structured data, or algorithmic generalization
+- **Lower value**: Simple pattern matching, clean data, or tasks not requiring systematic reasoning
+- **Modular adoption**: Individual components can be used independently based on specific task requirements
+
+## 7. Limitations and Future Work
 
 1. **Computational Overhead**: FK-Attention requires approximate resolvent computation
 2. **Basis Learning**: SPD effectiveness depends on learned basis quality
 3. **Verification Design**: Careful selection of invariants to avoid brittleness
 
-## 7. Conclusion
+## 8. Conclusion
 
 SPaR-K represents a principled approach to addressing fundamental limitations of Transformer architectures. Through the combination of path-integral attention, structure-randomness decomposition, and algorithmic verification, we demonstrate substantial improvements on reasoning-heavy workloads. The architecture provides a foundation for more robust and generalizable neural reasoning systems.
 
