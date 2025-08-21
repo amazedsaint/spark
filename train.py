@@ -1,3 +1,23 @@
+"""
+SPaR-K Training Script
+
+Complete training pipeline for the SPaR-K (Structure-Pseudo-Randomness with Kinetic Attention) architecture.
+Includes custom loss function combining task loss, verification penalties, and separation objectives.
+
+Usage:
+    python train.py --config configs/spark_config.yaml
+
+Author: Anoop Madhusudanan (amazedsaint@gmail.com)
+Repository: https://github.com/amazedsaint/spark
+
+Loss Function:
+    L = L_task + λ_ver * L_verifier + λ_sep * I(X_struct; X_pseudo)
+
+Reference:
+Madhusudanan, A. (2025). SPaR-K: Structure-Pseudo-Randomness with Kinetic 
+Attention for Enhanced Transformer Reasoning.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

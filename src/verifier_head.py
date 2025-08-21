@@ -1,3 +1,22 @@
+"""
+Verifier Head: Stack-based algorithmic verification
+
+This module implements the Verifier Head component of the SPaR-K architecture.
+It maintains algorithmic invariants through differentiable stack operations
+and provides training penalties for trace failures.
+
+Key Innovation: Differentiable stack with verification signals for algorithmic priors
+
+Author: Anoop Madhusudanan (amazedsaint@gmail.com)
+Part of: SPaR-K Architecture
+Repository: https://github.com/amazedsaint/spark
+
+References:
+- Graves, A. et al. (2014). Neural turing machines.
+- Joulin, A. & Mikolov, T. (2015). Inferring algorithmic patterns with stack-augmented recurrent nets.
+- Graves, A. et al. (2016). Hybrid computing using a neural network with dynamic external memory.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

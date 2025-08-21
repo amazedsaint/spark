@@ -1,3 +1,19 @@
+"""
+SPaR-K: Structure-Pseudo-Randomness with Kinetic Attention
+
+Complete SPaR-K Transformer implementation combining three novel components:
+1. Feynman-Kac Attention: Path-integral formulation for multi-hop reasoning
+2. SPD Router: Structure vs pseudo-randomness decomposition (Tao's principle)
+3. Verifier Head: Stack-based algorithmic verification
+
+Author: Anoop Madhusudanan (amazedsaint@gmail.com)
+Repository: https://github.com/amazedsaint/spark
+
+Reference:
+Madhusudanan, A. (2025). SPaR-K: Structure-Pseudo-Randomness with Kinetic 
+Attention for Enhanced Transformer Reasoning.
+"""
+
 import torch
 import torch.nn as nn
 from typing import Dict, Optional, Tuple

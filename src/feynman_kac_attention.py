@@ -1,3 +1,21 @@
+"""
+Feynman-Kac Attention: Path-integral formulation for multi-hop reasoning
+
+This module implements the FK-Attention component of the SPaR-K architecture.
+FK-Attention extends standard attention to capture multi-hop dependencies through
+a resolvent formulation inspired by the Feynman-Kac formula for path integrals.
+
+Key Innovation: (I - βA)^(-1)V formulation enables single-layer multi-hop reasoning
+
+Author: Anoop Madhusudanan (amazedsaint@gmail.com)
+Part of: SPaR-K Architecture
+Repository: https://github.com/amazedsaint/spark
+
+References:
+- Kac, M. (1949). On distributions of certain Wiener functionals.
+- Vaswani, A. et al. (2017). Attention is all you need.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

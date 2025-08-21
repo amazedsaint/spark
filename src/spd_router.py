@@ -1,3 +1,22 @@
+"""
+Structure-Pseudo-randomness Decomposition Router
+
+This module implements the SPD Router component of the SPaR-K architecture.
+Based on Tao's structure vs randomness principle, it decomposes inputs into
+structured and pseudo-random components, routing each through appropriate
+computational pathways.
+
+Key Innovation: X = X_struct + X_pseudo decomposition with specialized processing
+
+Author: Anoop Madhusudanan (amazedsaint@gmail.com)
+Part of: SPaR-K Architecture
+Repository: https://github.com/amazedsaint/spark
+
+References:
+- Tao, T. (2012). Topics in random matrix theory. (Structure vs randomness principle)
+- Ahmed, N. et al. (1974). Discrete cosine transform.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
