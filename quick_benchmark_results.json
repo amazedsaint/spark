@@ -1,0 +1,30 @@
+{
+  "spd_router": {
+    "0.2": {
+      "structure_correlation": 0.041924890130758286,
+      "noise_correlation": -0.03759126737713814,
+      "cross_correlation": 0.022225338965654373,
+      "snr_improvement_db": -6.734544277191162
+    },
+    "0.4": {
+      "structure_correlation": 0.0789160281419754,
+      "noise_correlation": -0.03995714336633682,
+      "cross_correlation": 0.05488405376672745,
+      "snr_improvement_db": -2.196087598800659
+    },
+    "0.6": {
+      "structure_correlation": -0.07954193651676178,
+      "noise_correlation": -0.05795168876647949,
+      "cross_correlation": 0.026609711349010468,
+      "snr_improvement_db": 2.163130760192871
+    }
+  },
+  "verifier_head": {
+    "baseline": 1.0,
+    "verifier": 0.25999999046325684
+  },
+  "evaluation_time": 16.38628053665161,
+  "best_snr_improvement": 2.163130760192871,
+  "verifier_improvement": -0.7400000095367432,
+  "meaningful_improvements": 1
+}

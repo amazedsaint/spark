@@ -81,11 +81,20 @@ cd spark
 pip install -r requirements.txt
 ```
 
+### Run Comprehensive Benchmarks
+```bash
+python run_robust_benchmarks.py     # Full evaluation (46s)
+python quick_benchmark.py           # Quick optimization test (16s)
+```
+
 ### Run End-to-End Test
 ```bash
 python end_to_end_test.py
 ```
 Expected output: All 8 test steps should pass ✅
+
+### View Detailed Results
+See [BENCHMARK_RESULTS.md](BENCHMARK_RESULTS.md) for complete evaluation findings.
 
 ### Train SPaR-K Model
 ```bash
