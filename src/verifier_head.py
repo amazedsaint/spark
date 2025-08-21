@@ -255,11 +255,35 @@ class VerifierHead(nn.Module):
     ) -> torch.Tensor:
         """Generate verification signals based on stack state"""
         
-        # Concatenate stack information
-        stack_summary = torch.cat([
-            torch.mean(memories, dim=(1, 2)),  # Average memory content
-            torch.mean(pointers, dim=1),       # Average pointer position
-        ], dim=-1)
+        # Create stack summary with correct dimensions
+        # memories: (batch, num_stacks, stack_size, element_dim)
+        # pointers: (batch, num_stacks, 1)
+        
+        batch_size = hidden.shape[0]
+        
+        # Average over stack and memory dimensions
+        memory_summary = torch.mean(memories, dim=(1, 2))  # (batch, element_dim)
+        pointer_summary = torch.mean(pointers, dim=(1, 2))  # (batch,)
+        
+        # Ensure pointer summary has correct shape
+        if pointer_summary.dim() == 1:
+            pointer_summary = pointer_summary.unsqueeze(-1)  # (batch, 1)
+        
+        # Stack summary should match expected dimension
+        expected_summary_dim = self.d_model // 2
+        if memory_summary.shape[-1] != expected_summary_dim:
+            # Project to correct dimension
+            if not hasattr(self, 'memory_proj'):
+                self.memory_proj = nn.Linear(memory_summary.shape[-1], expected_summary_dim).to(hidden.device)
+            memory_summary = self.memory_proj(memory_summary)
+        
+        # Pad pointer summary to match if needed
+        pointer_dim = expected_summary_dim - memory_summary.shape[-1]
+        if pointer_dim > 0:
+            pointer_padding = torch.zeros(batch_size, pointer_dim, device=hidden.device)
+            stack_summary = torch.cat([memory_summary, pointer_summary, pointer_padding], dim=-1)
+        else:
+            stack_summary = memory_summary
         
         # Combine with hidden state
         combined_input = torch.cat([hidden, stack_summary], dim=-1)

@@ -51,14 +51,14 @@ class SPDRouter(nn.Module):
         # Structure processing pathway - stable, low-complexity operators
         if self.use_learned_basis:
             self.structure_basis = nn.Parameter(
-                torch.randn(self.structure_dim, self.structure_dim) / math.sqrt(self.structure_dim)
+                torch.randn(d_model, self.structure_dim) / math.sqrt(d_model)
             )
             self.structure_coeffs = nn.Linear(self.structure_dim, self.structure_dim)
         else:
             # Use predefined structured operators (e.g., circulant, Toeplitz)
             self.register_buffer(
                 "structure_basis", 
-                self._create_structured_basis(self.structure_dim)
+                self._create_structured_basis(d_model, self.structure_dim)
             )
         
         self.structure_processor = nn.Sequential(
@@ -68,7 +68,8 @@ class SPDRouter(nn.Module):
             nn.Linear(self.structure_dim, self.structure_dim)
         )
         
-        # Pseudo-random processing pathway - full attention/MLP capacity
+        # Pseudo-random extraction and processing
+        self.pseudo_proj = nn.Linear(d_model, self.pseudo_dim)
         self.pseudo_processor = nn.Sequential(
             nn.Linear(self.pseudo_dim, self.pseudo_dim * 2),
             nn.ReLU(),
@@ -141,7 +142,7 @@ class SPDRouter(nn.Module):
         # Project input through structure-sensitive transformation
         if self.use_learned_basis:
             # Learnable basis extraction
-            projected = torch.matmul(x, self.structure_basis[:self.d_model, :self.structure_dim])
+            projected = torch.matmul(x, self.structure_basis)
         else:
             # Fixed structured basis (e.g., DCT, DFT-like)
             projected = self._structured_transform(x)
@@ -150,8 +151,8 @@ class SPDRouter(nn.Module):
     
     def _extract_pseudorandom(self, x: torch.Tensor, gate: torch.Tensor) -> torch.Tensor:
         """Extract pseudo-random component"""
-        # Simple projection for pseudo-random component
-        projected = x[..., :self.pseudo_dim] if x.size(-1) >= self.pseudo_dim else F.pad(x, (0, self.pseudo_dim - x.size(-1)))
+        # Simple linear projection for pseudo-random component
+        projected = self.pseudo_proj(x)
         return projected * gate
     
     def _process_structured(self, x_struct: torch.Tensor) -> torch.Tensor:
@@ -192,22 +193,22 @@ class SPDRouter(nn.Module):
         
         return separation_loss.item()
     
-    def _create_structured_basis(self, dim: int) -> torch.Tensor:
+    def _create_structured_basis(self, input_dim: int, output_dim: int) -> torch.Tensor:
         """Create a structured basis (e.g., DCT, circulant)"""
         # Create DCT-like basis
-        basis = torch.zeros(dim, dim)
-        for i in range(dim):
-            for j in range(dim):
-                basis[i, j] = math.cos(math.pi * i * (j + 0.5) / dim)
+        basis = torch.zeros(input_dim, output_dim)
+        for i in range(input_dim):
+            for j in range(output_dim):
+                basis[i, j] = math.cos(math.pi * i * (j + 0.5) / output_dim)
         
         # Normalize
-        basis = basis / torch.norm(basis, dim=1, keepdim=True)
+        basis = basis / (torch.norm(basis, dim=0, keepdim=True) + 1e-8)
         return basis
     
     def _structured_transform(self, x: torch.Tensor) -> torch.Tensor:
         """Apply structured transformation (DCT, circulant convolution, etc.)"""
         # Simple implementation: use the structured basis for transformation
-        return torch.matmul(x[..., :self.structure_dim], self.structure_basis)
+        return torch.matmul(x, self.structure_basis)
 
 
 class AdaptiveSPDRouter(SPDRouter):
