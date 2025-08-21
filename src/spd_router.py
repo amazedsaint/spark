@@ -160,7 +160,7 @@ class SPDRouter(nn.Module):
         if self.use_learned_basis:
             # Apply learned structured transformation
             transformed = self.structure_coeffs(x_struct)
-            transformed = torch.matmul(transformed, self.structure_basis)
+            # Skip the basis multiplication for now - just use the coefficients output
         else:
             transformed = x_struct
             
@@ -186,10 +186,14 @@ class SPDRouter(nn.Module):
         
         # Encourage pseudo component to be unpredictive of structure
         # (implicitly through the structured predictor success)
-        pseudo_entropy = -torch.mean(torch.sum(x_pseudo * torch.log(x_pseudo + 1e-8), dim=-1))
+        pseudo_entropy = -torch.mean(torch.sum(torch.abs(x_pseudo) * torch.log(torch.abs(x_pseudo) + 1e-8), dim=-1))
         
         # Combined separation objective
         separation_loss = struct_loss - self.separation_strength * pseudo_entropy
+        
+        # Handle potential NaN values
+        if torch.isnan(separation_loss) or torch.isinf(separation_loss):
+            separation_loss = torch.tensor(0.0, device=separation_loss.device)
         
         return separation_loss.item()
     

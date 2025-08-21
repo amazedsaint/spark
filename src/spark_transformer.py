@@ -323,7 +323,7 @@ class SPaRKTransformer(nn.Module):
             loss_components: Dictionary of individual loss components
         """
         # Task loss (standard language modeling)
-        task_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-100)
+        task_loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-100)
         
         # Verification loss
         verification_loss = aux_info.get("total_verification_loss", 0.0)
