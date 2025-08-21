@@ -1,0 +1,37 @@
+model:
+  vocab_size: 1000
+  d_model: 256
+  n_layers: 4
+  n_heads: 8
+  max_seq_length: 512
+  dropout: 0.1
+  # FK Attention parameters
+  fk_beta: 0.5
+  fk_approximation: "krylov"
+  fk_max_path_length: 10
+  # SPD Router parameters
+  use_adaptive_spd: true
+  spd_separation_strength: 0.1
+  # Verifier Head parameters
+  enable_verifier: true
+  stack_size: 64
+  num_stacks: 1
+  verification_types: ["balanced_parens", "sequence_length"]
+  verifier_penalty_strength: 1.0
+  # Integration parameters
+  residual_connection: "standard"
+
+training:
+  batch_size: 16
+  num_epochs: 20
+  learning_rate: 1e-4
+  weight_decay: 0.01
+  lambda_verifier: 0.1
+  lambda_separation: 0.05
+  grad_clip: 1.0
+  warmup_steps: 1000
+
+data:
+  num_samples: 10000
+  train_split: 0.8
+  max_length: 256
