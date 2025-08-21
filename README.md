@@ -5,35 +5,48 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![End-to-End Validated](https://img.shields.io/badge/Status-Validated-green.svg)](https://github.com/amazedsaint/spark)
 
-SPaR-K addresses fundamental limitations in how Transformer models handle complex reasoning, noisy data, and algorithmic tasks. While standard Transformers excel at pattern recognition, they struggle with multi-step logical reasoning, maintaining performance on structured but noisy inputs, and generalizing algorithmic patterns beyond their training distribution.
+A research implementation of a novel Transformer architecture that combines three components: Feynman-Kac attention, structure-pseudo-randomness decomposition, and verifier heads. This is an experimental architecture designed to explore potential improvements in multi-step reasoning tasks.
 
 **Author:** Anoop Madhusudanan (amazedsaint@gmail.com)  
 **Institution:** Independent Research  
 **Paper:** [SPaR-K Architecture Paper](SPaR-K_Architecture_Paper.md)
 
-## 🧠 What SPaR-K Solves
+## 🔬 Research Goals
 
-### The Problem with Standard Transformers
-- **Single-hop Reasoning**: Attention mechanisms can only capture direct relationships, making multi-step logical inference difficult
-- **Noise Sensitivity**: Performance degrades when structured signals are mixed with noise or irrelevant information  
-- **Algorithmic Brittleness**: Models fail to generalize systematic patterns (like balanced parentheses, recursive structures) to longer sequences than seen during training
+SPaR-K explores three hypotheses about Transformer limitations:
+- Standard attention may be limited in capturing multi-hop dependencies
+- Mixed structured/noisy signals could benefit from specialized processing pathways
+- Explicit algorithmic priors might improve systematic generalization
 
-### SPaR-K's Solution
-SPaR-K introduces three complementary innovations that work together to enable more robust reasoning:
+## 🧪 Current Validation Status
 
-**🔄 Feynman-Kac Attention**: Extends attention to capture multi-hop reasoning paths within a single layer by computing path integrals over all possible routes between tokens, not just direct connections.
+### What Has Been Tested ✅
+- **Architecture Integration**: All components work together in a 643K parameter model
+- **Training Stability**: Stable convergence observed (loss: 4.0355 → 3.9878 over 3 epochs)
+- **Component Functionality**: Each module processes inputs without errors
+- **End-to-End Pipeline**: Complete training/inference pipeline operational
 
-**📊 SPD Router**: Automatically separates structured signal from pseudo-random noise, processing each through specialized pathways - structured components get stable, efficient processing while complex patterns get full attention capacity.
+### What Remains To Be Validated ⚠️
+- **Performance vs Standard Transformers**: No systematic comparison on established benchmarks
+- **Real-world Task Performance**: Limited testing on actual reasoning datasets
+- **Scaling Properties**: Only tested on small models (2 layers, 128d)
+- **Computational Efficiency**: Theoretical overhead not empirically measured
 
-**🔍 Verifier Head**: Maintains algorithmic invariants through a differentiable stack that tracks logical state and provides training signals when reasoning traces violate expected patterns.
+## ⚡ Measured Results
 
-## 🎯 Key Capabilities
+### End-to-End Architecture Performance
+- **Model Size**: 643,272 parameters (2 layers, 128 dimensions, 4 heads)
+- **Training**: Converged successfully on synthetic sequence data
+- **Loss Reduction**: 1.2% improvement over 3 epochs (4.0355 → 3.9878)
+- **Component Losses**: Verification loss: 0.0006, Separation loss: 1.91
+- **Memory Usage**: Runs successfully on CPU and single GPU
+- **Numerical Stability**: No gradient explosions or NaN values observed
 
-- **Multi-hop Graph Reasoning**: Can trace relationships across multiple steps (A→B→C→D) in a single forward pass
-- **Robust Structured Processing**: Maintains performance when clean signals are corrupted with noise
-- **Algorithmic Generalization**: Learns systematic patterns that extend beyond training sequence lengths
-- **End-to-End Validated**: Complete architecture tested and working with stable training
-- **Production Ready**: 643K parameter model demonstrates practical scalability
+### Component-Level Testing
+- **FK-Attention**: Successfully computes resolvent operations
+- **SPD Router**: Produces separate structured/pseudo components
+- **Verifier Head**: Maintains differentiable stack operations
+- **Integration**: All three components process data without conflicts
 
 ## 🚀 Quick Start
 
@@ -112,32 +125,42 @@ Tracks algorithmic invariants through a differentiable stack, providing training
 | **Verifier Head** | `src/verifier_head.py` | Differentiable stack with verification penalties |
 | **SPaR-K Block** | `src/spark_transformer.py` | Integrated architecture with custom loss function |
 
-## 📊 Validation Experiments
+## 📊 Available Experiments
+
+**Note**: These are proof-of-concept demonstrations, not rigorous benchmarks.
 
 ```bash
-# Individual component tests
-python experiments/k_hop_reachability.py     # FK-Attention validation
-python experiments/snr_validation.py         # SPD Router validation  
-python experiments/long_context_test.py      # Verifier Head validation
+# Basic functionality tests
+python simple_demo.py                       # Core concept validation
+python end_to_end_test.py                  # Full architecture test
 
-# Run all experiments
-python run_all_experiments.py
+# Component demonstrations (experimental)
+python experiments/k_hop_reachability.py    # FK-Attention concept
+python experiments/snr_validation.py        # SPD Router concept  
+python experiments/long_context_test.py     # Verifier Head concept
 ```
 
-## 🔬 Research Results
+## ⚠️ Important Limitations
 
-### End-to-End Architecture Performance
-- **Model Size**: 643,272 parameters (2 layers, 128d, 4 heads)
-- **Training Convergence**: Stable loss reduction (4.0355 → 3.9878)
-- **Component Integration**: All three components work together seamlessly
-- **Numerical Stability**: No gradient explosions or NaN values
+### What This Implementation Provides
+- **Proof of Concept**: Demonstrates that the architecture can be implemented and trained
+- **Component Integration**: Shows all three components can work together
+- **Stable Training**: Validates that the model converges without numerical issues
 
-### Component-Specific Results
-| Component | Metric | Improvement |
-|-----------|--------|-------------|
-| FK-Attention | K-hop Reachability AUC | 0.55 → 1.00 (Perfect) |
-| SPD Router | Signal-to-Noise Ratio | +11 dB improvement |
-| Verifier Head | Long Context Accuracy | Maintains performance |
+### What This Implementation Does NOT Provide
+- **Performance Validation**: No systematic comparison vs. standard Transformers on established benchmarks
+- **Real-world Evaluation**: Testing limited to synthetic data and toy problems
+- **Scalability Evidence**: Only tested on small models (643K parameters)
+- **Efficiency Analysis**: Computational overhead not empirically measured
+- **Generalization Studies**: No evaluation on actual reasoning datasets
+
+### Current Status
+This is a **research prototype** demonstrating architectural feasibility. Claims about performance improvements require proper empirical validation on:
+- Standard NLP benchmarks (GLUE, SuperGLUE)
+- Multi-hop reasoning datasets (HotpotQA, MuSiQue)
+- Structured prediction tasks
+- Larger model scales (1B+ parameters)
+- Computational efficiency measurements
 
 ## 📁 Project Structure
 
@@ -165,34 +188,38 @@ spark/
     └── long_context_test.py          # Verifier head validation
 ```
 
-## 🧪 Testing & Validation
+## 🧪 Current Testing Status
 
-The architecture has been comprehensively tested:
+**What Has Been Validated**:
+1. **Implementation**: All components can be instantiated and integrated ✅
+2. **Training**: Model converges without numerical instability ✅  
+3. **Functionality**: Each module processes inputs as designed ✅
 
-1. **Unit Tests**: Each component works individually ✅
-2. **Integration Tests**: All components work together ✅  
-3. **End-to-End Tests**: Complete training pipeline ✅
-4. **Performance Tests**: Validated improvements ✅
-5. **Stability Tests**: No numerical issues ✅
+**What Needs Validation**:
+1. **Performance**: No comparison vs. standard Transformers on benchmarks ⚠️
+2. **Effectiveness**: Claims about reasoning improvements unvalidated ⚠️
+3. **Efficiency**: Computational overhead not measured ⚠️
 
-## 🎯 Real-World Applications
+## 🎯 Potential Applications (Hypothetical)
 
-### Where SPaR-K Excels
+**Note**: These applications represent research hypotheses that require empirical validation.
 
-**🔗 Knowledge Graph Reasoning**
-- Question answering that requires following chains of relationships
-- Example: "Who is the spouse of the director of the movie that won Best Picture in 2019?" requires A→B→C reasoning
-- Traditional transformers struggle with these multi-hop queries
+### Where SPaR-K Might Excel
 
-**🧮 Mathematical and Logical Problem Solving**  
-- Complex proofs requiring multiple inference steps
-- Symbolic reasoning where each step depends on previous conclusions
-- Algebraic manipulation with sequence-dependent transformations
+**🔗 Multi-hop Reasoning Tasks**
+- Knowledge graph queries requiring chained inference
+- Question answering across multiple documents
+- *Hypothesis*: FK-Attention could capture longer dependency chains
 
-**💻 Code Understanding and Generation**
-- Analyzing function calls across multiple files and modules
-- Understanding variable scope and dependency chains
-- Generating code that maintains logical consistency across long contexts
+**📊 Structured Data Processing**  
+- Time series with systematic patterns + noise
+- Scientific data with known structure + measurement error
+- *Hypothesis*: SPD Router could improve signal/noise separation
+
+**🧮 Algorithmic Pattern Learning**
+- Code syntax validation and generation
+- Mathematical proof verification
+- *Hypothesis*: Verifier Head could enforce systematic constraints
 
 **📊 Structured Data with Noise**
 - Processing financial data where market signals are mixed with noise

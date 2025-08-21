@@ -7,7 +7,7 @@
 
 ## Abstract
 
-We propose SPaR-K (Structure-Pseudo-Randomness with Kinetic attention), a novel Transformer architecture that addresses three fundamental limitations of standard attention mechanisms: (1) inability to perform multi-hop reasoning within a single layer, (2) sensitivity to noise in structured data, and (3) lack of explicit algorithmic priors for generalization. SPaR-K combines three key components: Feynman-Kac Attention (FK-Attn) for path-integral multi-hop reasoning, Structure-Pseudo-randomness Decomposition Router (SPDRouter) based on Tao's structure vs randomness principle [1], and Verifier Heads that enforce algorithmic invariants through stack-based verification. Our controlled experiments demonstrate substantial improvements: FK-Attn achieves perfect AUC (1.00 vs 0.55) on K-hop reachability tasks, SPD routing improves signal-to-noise ratio by ~11 dB on structured signals, and verifier heads enable generalization to contexts beyond training distribution. The complete architecture has been validated end-to-end, showing stable training convergence and successful integration of all components.
+We propose SPaR-K (Structure-Pseudo-Randomness with Kinetic attention), a novel Transformer architecture that explores three hypotheses about current limitations: (1) single-hop attention may limit multi-step reasoning, (2) mixed structured/noisy signals could benefit from specialized processing, and (3) explicit algorithmic priors might improve systematic generalization. SPaR-K combines three key components: Feynman-Kac Attention (FK-Attn) for computing path integrals over attention graphs, Structure-Pseudo-randomness Decomposition Router (SPDRouter) based on Tao's structure vs randomness principle [1], and Verifier Heads that maintain algorithmic state through differentiable stack operations. We present a proof-of-concept implementation demonstrating architectural feasibility: the 643K parameter model trains stably, integrates all components without conflicts, and shows expected component behaviors (separation loss: 1.91, verification loss: 0.0006). However, the core hypotheses about improved reasoning performance require systematic empirical validation on established benchmarks, which remains future work. The modular design enables selective evaluation of individual components.
 
 ## 1. Introduction
 
@@ -101,38 +101,41 @@ Where:
 2. **SPD Router**: Learned Toeplitz or state-space bases replacing FFT
 3. **Stability**: Enforce β ρ(A) < 1 and clip pseudo branch activations
 
-## 4. Experimental Results
+## 4. Preliminary Experimental Results
 
-### 4.1 End-to-End Architecture Validation
+**Important Note**: The following results represent proof-of-concept demonstrations rather than rigorous comparative benchmarks. Full empirical validation on established datasets remains future work.
 
-We conducted comprehensive end-to-end testing of the complete SPaR-K architecture:
-- **Model Size**: 643,272 parameters (2 layers, 128d, 4 heads)
-- **Training Convergence**: Loss decreased from 4.0355 to 3.9878 (stable convergence)
-- **Component Integration**: All three components work together seamlessly
-- **Numerical Stability**: No gradient explosions or NaN values observed
+### 4.1 Architecture Feasibility Validation
 
-### 4.2 K-hop Reachability
-- **Standard Attention AUC**: 0.55
-- **FK-Attention AUC**: 1.00
-- **Improvement**: Perfect multi-hop reasoning within single layer
+We demonstrate that the SPaR-K architecture can be successfully implemented and trained:
+- **Model Implementation**: 643,272 parameters (2 layers, 128d, 4 heads)
+- **Training Stability**: Loss decreased from 4.0355 to 3.9878 over 3 epochs on synthetic data
+- **Component Integration**: All three components process data without errors or conflicts
+- **Numerical Stability**: No gradient explosions or NaN values during training
 
-### 4.3 Signal-to-Noise Ratio
-- **Baseline SNR**: Standard level
-- **SPD Router SNR**: +11 dB improvement
-- **Residual**: Significantly whiter, indicating better noise separation
-- **Measured Separation Loss**: 1.91 (indicating active structure/pseudo decomposition)
+### 4.2 Component Functionality Tests
 
-### 4.4 Long Context Generalization
-- **Training Context**: 32 tokens
-- **Test Context**: Extended sequences
-- **Verifier Loss**: 0.0006 (low penalty indicating proper stack operations)
-- **Result**: Maintained performance through verifier head supervision
+**FK-Attention Module**: Successfully computes resolvent operations (I - βA)^(-1)V without numerical instability. The module processes attention matrices and produces outputs of expected dimensions.
 
-### 4.5 Production Readiness
-- **Memory Efficiency**: Runs on both CPU and GPU
-- **Processing Speed**: 8 sequences per batch efficiently processed
-- **Inference**: Successful sequence generation demonstrated
-- **Reproducibility**: Complete codebase and training scripts provided
+**SPD Router Module**: Produces structured and pseudo-random component decompositions with measured separation loss of 1.91, indicating the components are being differentiated.
+
+**Verifier Head Module**: Maintains differentiable stack operations with verification loss of 0.0006, showing the stack mechanism functions without underflow/overflow penalties.
+
+### 4.3 Current Limitations
+
+**Validation Scope**: Testing limited to:
+- Synthetic sequence data only
+- Small model scale (643K parameters) 
+- Short training runs (3 epochs)
+- No comparison against standard Transformer baselines
+- No evaluation on established reasoning benchmarks
+
+**Missing Evaluations**:
+- Performance comparison on multi-hop reasoning datasets (HotpotQA, MuSiQue)
+- Systematic analysis of computational overhead
+- Scaling behavior on larger models and datasets
+- Real-world task performance validation
+- Ablation studies isolating individual component contributions
 
 ## 5. Concrete Examples and Use Cases
 
@@ -193,9 +196,29 @@ Consider learning to validate nested programming constructs:
 
 ## 8. Conclusion
 
-SPaR-K represents a principled approach to addressing fundamental limitations of Transformer architectures. Through the combination of path-integral attention, structure-randomness decomposition, and algorithmic verification, we demonstrate substantial improvements on reasoning-heavy workloads. The architecture provides a foundation for more robust and generalizable neural reasoning systems.
+SPaR-K presents a novel architectural approach that combines three theoretically motivated components: Feynman-Kac attention for potential multi-hop reasoning, structure-pseudo-randomness decomposition for handling mixed signal types, and verifier heads for maintaining algorithmic invariants. 
 
-Our controlled experiments validate each component's intended effects, and the modular design enables selective adoption based on task requirements. Future work will focus on scaling optimizations and broader empirical validation across diverse reasoning tasks.
+### Contributions
+
+We demonstrate the **architectural feasibility** of integrating these components into a working Transformer variant. The implementation successfully trains without numerical instabilities and shows that the three modules can operate together in a unified framework.
+
+### Current Status and Future Work
+
+This work provides a **proof-of-concept implementation** that establishes the technical viability of the proposed approach. However, the hypotheses about improved reasoning capabilities require substantial empirical validation that remains future work:
+
+**Immediate Next Steps**:
+- Systematic comparison against standard Transformers on established multi-hop reasoning benchmarks
+- Computational efficiency analysis and optimization
+- Scaling studies to larger model sizes and datasets
+- Ablation studies to isolate individual component contributions
+
+**Longer-term Research Directions**:
+- Application to real-world reasoning tasks (legal analysis, scientific literature review)
+- Integration with existing large language model architectures
+- Development of domain-specific verification mechanisms
+- Exploration of alternative resolvent approximation methods
+
+The modular design enables selective adoption and evaluation of individual components, facilitating incremental validation of the underlying hypotheses about Transformer limitations and potential solutions.
 
 ## References
 
